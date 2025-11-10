@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Gold Calculator</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Styling --- */
+        
+        :root {
+            --bg-color: #161b22;       /* Dark background */
+            --card-color: #1c2128;      /* Slightly lighter card */
+            --input-bg: #0d1117;       /* Darker input area */
+            --border-color: #30363d;
+            --text-primary: #e6edf3;   /* Main text color (light) */
+            --text-secondary: #8b949e; /* Lighter text (labels) */
+            --accent-green: #238636;   /* Green for buttons */
+            --accent-green-hover: #2ea043;
+            --key-color: #21262d;      /* Keypad button color */
+            --key-op-color: #1f6feb;   /* Operator key (AC, Backspace) */
+            --key-active: #0d1117;     /* Active toggle key */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Main calculator body */
+        .calculator-container {
+            width: 100%;
+            max-width: 380px;
+            background-color: var(--card-color);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* Top display for the total */
+        .display-area {
+            background-color: var(--input-bg);
+            padding: 25px 20px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .display-area .label {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .display-area .total {
+            font-size: 42px;
+            font-weight: 600;
+            color: var(--text-primary);
+            word-wrap: break-word;
+        }
+
+        /* All input fields */
+        .input-section {
+            padding: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .input-group input[type="text"],
+        .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 18px;
+            font-weight: 500;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        /* Highlight for active input */
+        .input-group input[type="text"].active-input {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(35, 134, 54, 0.3);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .input-row .input-group {
+            flex: 1;
+        }
+
+        /* Calculate button */
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            background-color: var(--accent-green);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 5px;
+        }
+
+        .calculate-btn:hover {
+            background-color: var(--accent-green-hover);
+        }
+
+        /* Keypad layout */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 20px;
+            background-color: var(--input-bg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .keypad button {
+            font-family: 'Poppins', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            background-color: var(--key-color);
+            border: none;
+            border-radius: 50%; /* Round buttons */
+            aspect-ratio: 1 / 1; /* Keep them perfect circles */
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .keypad button:active {
+            transform: scale(0.95);
+        }
+
+        /* Special operator keys (AC, Backspace) */
+        .keypad .key-op {
+            background-color: var(--key-op-color);
+            color: white;
+        }
+
+        /* Toggle keys (Price, Weight) */
+        .keypad .key-toggle {
+            font-size: 14px;
+            background-color: var(--key-color);
+            border-radius: 10px; /* Rectangular */
+            aspect-ratio: auto;
+            height: 100%;
+        }
+
+        /* Highlight for active toggle */
+        .keypad .key-toggle.active-toggle {
+            background-color: var(--accent-green);
+            color: white;
+        }
+        
+        /* Spanning 0 key */
+        .keypad .key-span-2 {
+            grid-column: span 2;
+            border-radius: 10px;
+            aspect-ratio: 2.1 / 1; /* Rectangular */
+        }
+        
+        /* Fine print text */
+        .fine-print {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 0 20px 15px 20px;
+            background-color: var(--input-bg);
+        }
+
+        /* Bottom summary bar */
+        .summary-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-color);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 10px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .summary-item {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .summary-item span {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Add margin to body to prevent overlap with fixed bar */
+        body {
+            padding-bottom: 100px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+        
+        <div class="display-area">
+            <div class="label">Total Value</div>
+            <div class="total" id="total-display">₹0</div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="price-input">Today's 24K price (₹/gram)</label>
+                <input type="text" id="price-input" placeholder="e.g., 6000" inputmode="none">
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="karat-select">Karat</label>
+                    <select id="karat-select">
+                        <option value="24k">24k</option>
+                        <option value="22k">22k</option>
+                        <option value="18k">18k</option>
+                        <option value="14k">14k</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="unit-select">Unit</label>
+                    <select id="unit-select">
+                        <option value="Grams">Grams</option>
+                        <option value="Tola">Tola</option>
+                        <option value="Troy Oz">Troy Oz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="weight-input">Weight</label>
+                <input type="text" id="weight-input" placeholder="e.g., 33" inputmode="none">
+            </div>
+
+            <button class="calculate-btn" id="calculate-btn">Calculate</button>
+        </div>
+
+        <div class="keypad" id="keypad">
+            <button data-value="7">7</button>
+            <button data-value="8">8</button>
+            <button data-value="9">9</button>
+            <button class="key-op" data-value="backspace">⌫</button>
+
+            <button data-value="4">4</button>
+            <button data-value="5">5</button>
+            <button data-value="6">6</button>
+            <button class="key-op" data-value="ac">AC</button>
+            
+            <button data-value="1">1</button>
+            <button data-value="2">2</button>
+            <button data-value="3">3</button>
+            <button data-value=".">.</button>
+
+            <button class="key-toggle" data-value="price">Price</button>
+            <button class="key-span-2" data-value="0">0</button>
+            <button class="key-toggle" data-value="weight">Weight</button>
+        </div>
+        
+        <div class="fine-print">
+            1 tola = 11.6638 g | 1 troy oz = 31.1034768 g
+        </div>
+    </div>
+    
+    <div class="summary-bar">
+        <div class="summary-item">
+            ₹/g: <span id="summary-price">N/A</span>
+        </div>
+        <div class="summary-item">
+            Karat: <span id="summary-karat">N/A</span>
+        </div>
+        <div class="summary-item">
+            Weight: <span id="summary-weight">N/A</span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all elements
+            const priceInput = document.getElementById('price-input');
+            const weightInput = document.getElementById('weight-input');
+            const karatSelect = document.getElementById('karat-select');
+            const unitSelect = document.getElementById('unit-select');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const totalDisplay = document.getElementById('total-display');
+            const keypad = document.getElementById('keypad');
+            
+            // Summary bar elements
+            const summaryPrice = document.getElementById('summary-price');
+            const summaryKarat = document.getElementById('summary-karat');
+            const summaryWeight = document.getElementById('summary-weight');
+
+            // Keypad toggle buttons
+            const priceToggle = document.querySelector('button[data-value="price"]');
+            const weightToggle = document.querySelector('button[data-value="weight"]');
+
+            // State
+            let activeInput = priceInput; // Default active input
+
+            // Conversion factors
+            const conversionFactors = {
+                'Grams': 1,
+                'Tola': 11.6638,
+                'Troy Oz': 31.1034768
+            };
+
+            const purityFactors = {
+                '24k': 1,
+                '22k': 22 / 24,
+                '18k': 18 / 24,
+                '14k': 14 / 24
+            };
+
+            // Function to format numbers as Indian Rupees
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    maximumFractionDigits: 2,
+                }).format(amount);
+            }
+
+            // Function to update the active input field and button highlights
+            function setActiveInput(field) {
+                // Remove highlights from all
+                priceInput.classList.remove('active-input');
+                weightInput.classList.remove('active-input');
+                priceToggle.classList.remove('active-toggle');
+                weightToggle.classList.remove('active-toggle');
+
+                // Set new active input
+                if (field === 'price') {
+                    activeInput = priceInput;
+                    priceInput.classList.add('active-input');
+                    priceToggle.classList.add('active-toggle');
+                } else if (field === 'weight') {
+                    activeInput = weightInput;
+                    weightInput.classList.add('active-input');
+                    weightToggle.classList.add('active-toggle');
+                }
+            }
+
+            // --- Event Listeners ---
+
+            // Keypad click handler (uses event delegation)
+            keypad.addEventListener('click', (e) => {
+                if (!e.target.matches('button')) return;
+
+                const value = e.target.dataset.value;
+
+                switch (value) {
+                    case 'price':
+                        setActiveInput('price');
+                        break;
+                    case 'weight':
+                        setActiveInput('weight');
+                        break;
+                    case 'ac':
+                        activeInput.value = '';
+                        break;
+                    case 'backspace':
+                        activeInput.value = activeInput.value.slice(0, -1);
+                        break;
+                    case '.':
+                        if (!activeInput.value.includes('.')) {
+                            activeInput.value += '.';
+                        }
+                        break;
+                    default:
+                        // This handles numbers (0-9)
+                        if (isFinite(value)) {
+                            activeInput.value += value;
+                        }
+                }
+            });
+
+            // Also set active input on manual focus (for desktop users)
+            priceInput.addEventListener('focus', () => setActiveInput('price'));
+            weightInput.addEventListener('focus', () => setActiveInput('weight'));
+
+            // Calculate button click
+            calculateBtn.addEventListener('click', () => {
+                // Get values
+                const price24k = parseFloat(priceInput.value);
+                const weight = parseFloat(weightInput.value);
+                const karat = karatSelect.value;
+                const unit = unitSelect.value;
+
+                // Validate
+                if (isNaN(price24k) || price24k <= 0) {
+                    alert("Please enter a valid price for 24K gold.");
+                    return;
+                }
+                if (isNaN(weight) || weight <= 0) {
+                    alert("Please enter a valid weight.");
+                    return;
+                }
+
+                // --- Calculation ---
+                // 1. Convert weight to grams
+                const weightInGrams = weight * conversionFactors[unit];
+
+                // 2. Get price per gram for the selected karat
+                const pricePerGram = price24k * purityFactors[karat];
+
+                // 3. Calculate total
+                const totalValue = weightInGrams * pricePerGram;
+
+                // --- Display Results ---
+                totalDisplay.textContent = formatCurrency(totalValue);
+
+                // Update summary bar
+                summaryPrice.textContent = new Intl.NumberFormat('en-IN').format(price24k);
+                summaryKarat.textContent = karat;
+                summaryWeight.textContent = `${weight} ${unit}`;
+            });
+
+            // Set default active input on load
+            setActiveInput('price');
+
+        });
+    </script>
+
+</body>
+</html>
